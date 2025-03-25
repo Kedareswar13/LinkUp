@@ -10,7 +10,7 @@ const app = express();
 const path = require("path");
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
-
+const userRouter = require("./routes/userRoutes");
 app.use("/", express.static("uploads"));
 
 app.use(cookieParser());
@@ -36,7 +36,8 @@ app.use(mongoSanitize());
 
 
 // Routes for users
-
+app.use("/api/v1/users", userRouter); 
+//https:8000/localhost:8000/api/v1/users/signup
 // Routes for posts
 
 app.all("*", (req, res, next) => {

@@ -2,7 +2,6 @@ const User = require("../models/userModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const generateOtp = require("../utils/generateOtp");
-const generateOtp = require("../utils/generateOtp"); // Ensure OTP generator is imported
 
 
 exports.signup = catchAsync(async (req, res, next) => {
@@ -14,7 +13,26 @@ exports.signup = catchAsync(async (req, res, next) => {
   if (existingUser) {
     return next(new AppError("Email already registered", 400));
 }
-const otp = generateOtp();
-const otpExpires = Date.now() + 24 * 60 * 60 * 100;
+const otp = generateOtp(); // Generates a 6-digit OTP
+const otpExpires = Date.now() + 24 * 60 * 60 * 1000; // OTP expires in 24 hours
+
+const newUser = await User.create({
+  username,
+  email,
+  password,
+  passwordConfirm,
+  otp,
+  otpExpires,
+});
+
+res.status(200).json({
+  status: "success",
+  message: "User registered successfully. Please verify OTP.",
+  data: {
+    user: newUser,
+    email: newUser.email,
+  },
+});
+   
   
 });
