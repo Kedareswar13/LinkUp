@@ -14,7 +14,7 @@ exports.getProfile = catchAsync(async (req, res, next) => {
       options: { sort: { createdAt: -1 } },
     })
     .populate({
-      path: "savedPosts", // Removed incorrect "A" character
+      path: "savedPosts", 
       options: { sort: { createdAt: -1 } },
     });
 
