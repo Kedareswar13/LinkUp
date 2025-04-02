@@ -150,7 +150,7 @@ exports.resendOtp = catchAsync(async (req, res, next) => {
 
   // Generate new OTP and set expiration time
   const otp = generateOtp();
-  const otpExpires = Date.now() + 24 * 60 * 60 * 1000; // OTP valid for 24 hours
+  const otpExpires = Date.now() + 2 * 60 * 1000; // OTP valid for 24 hours
 
   user.otp = otp;
   user.otpExpires = otpExpires;
