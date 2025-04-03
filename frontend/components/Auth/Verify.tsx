@@ -136,7 +136,8 @@ const Verify = () => {
             }}
             
             maxLength={1}
-            className="sm:w-20 sm:h-20 w-10 h-10 rounded-lg bg-gray-200 text-lg sm:text-3xl font-bold outline-gray-500 text-center no-spinner"
+            className="sm:w-20 sm:h-20 w-10 h-10 rounded-lg
+             bg-gray-200 text-lg sm:text-3xl font-bold outline-gray-500 text-center no-spinner"
           />
         ))}
       </div>
