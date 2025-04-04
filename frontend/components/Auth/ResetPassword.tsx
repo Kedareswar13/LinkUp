@@ -7,17 +7,46 @@ import LoadingButton from "../Helper/loadingButton";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { useDispatch } from "react-redux";
+import axios from "axios";
+import { BASE_API_URL } from "@/server";
+import { handleAuthRequest } from "../utils/apiRequest";
+import { setAuthUser } from "@/store/authSlice";
+import { toast } from "sonner";
 
 const PasswordReset = () => {
     const searchParams = useSearchParams();
     const email = searchParams.get("email");
     const [otp,setOtp] = useState("");
     const [password,setPassword] = useState("");
-    const [passwordconfirm,setPasswordConfirm] = useState("");
+    const [passwordConfirm,setPasswordConfirm] = useState("");
     const [isLoading,setIsLoading] = useState(false);
     const dispatch = useDispatch();
     const router = useRouter();
     
+    const handleSubmit = async () => {
+        if (!otp || !password || !passwordConfirm) {
+            toast.error("All fields are required.");
+            return;
+        }
+    
+        if (password.trim() !== passwordConfirm.trim()) {
+            toast.error("Passwords do not match!");
+            return;
+        }
+    
+        const data = { email, otp, password: password.trim(), passwordConfirm: passwordConfirm.trim() };
+    
+        const resetPassReq = async () =>
+            await axios.post(`${BASE_API_URL}/users/reset-password`, data, { withCredentials: true });
+    
+        const result = await handleAuthRequest(resetPassReq, setIsLoading);
+    
+        if (result) {
+            dispatch(setAuthUser(result.data.data.user));
+            toast.success(result.data.message);
+            router.push("/auth/login");
+        }
+    };    
 
     return (
         <div className="h-screen flex items-center justify-center flex-col">
@@ -49,12 +78,12 @@ const PasswordReset = () => {
                     name="passwordconfirm"
                     placeholder="Confirm new password"
                     inputClassName="px-6 py-3 bg-gray-300 rounded-lg outline-none w-full"
-                    value={passwordconfirm}
+                    value={passwordConfirm}
                     onChange={(e)=>setPasswordConfirm(e.target.value)}
                 />
             </div>
             <div className="flex items-center space-x-4 mt-6">
-                <LoadingButton isLoading={isLoading}>Change Password</LoadingButton>
+                <LoadingButton onClick={handleSubmit}isLoading={isLoading}>Change Password</LoadingButton>
                 <Button variant={"ghost"}>
                     <Link href="/auth/forget-password">Go Back</Link>
                 </Button>
