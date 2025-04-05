@@ -14,7 +14,18 @@ const authSlice = createSlice({
   initialState,  
   reducers: {
     setAuthUser(state, action: PayloadAction<User | null>) {
-      state.user = action.payload; // Fixed typo (was "pay Load")
+      if (action.payload) {
+        // Ensure required fields are present
+        const { username, profilePicture, bio } = action.payload;
+        state.user = {
+          ...action.payload,
+          username: username || "",
+          profilePicture: profilePicture || "",
+          bio: bio || "",
+        };
+      } else {
+        state.user = null;
+      }
     },
   },
 });
