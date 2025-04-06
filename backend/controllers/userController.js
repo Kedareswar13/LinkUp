@@ -1,6 +1,8 @@
 const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
+const getDataUri = require("../utils/datauri");
+const { uploadToCloudinary } = require("../utils/cloudinary");
 
 exports.getProfile = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -14,7 +16,7 @@ exports.getProfile = catchAsync(async (req, res, next) => {
       options: { sort: { createdAt: -1 } },
     })
     .populate({
-      path: "savedPosts", 
+      path: "savedPosts",
       options: { sort: { createdAt: -1 } },
     });
 
@@ -32,34 +34,36 @@ exports.getProfile = catchAsync(async (req, res, next) => {
 
 exports.editProfile = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
-  const { bio } = req.body;
-  const profilePicture = req.file; // Ensure file path is set
+  const { bio, username } = req.body; // Accept username and bio from the request body
+  const profilePicture = req.file; // Ensure file is provided via multer
 
   let cloudResponse;
 
+  // If a profile picture file is provided, convert it and upload it to Cloudinary
   if (profilePicture) {
     const fileUri = getDataUri(profilePicture);
     cloudResponse = await uploadToCloudinary(fileUri);
   }
 
+  // Find the user by ID, excluding the password field
   const user = await User.findById(userId).select("-password");
 
   if (!user) return next(new AppError("User Not Found", 404));
 
+  // Update fields if provided in the request
   if (bio) user.bio = bio;
-
+  if (username) user.username = username;
   if (profilePicture) {
     user.profilePicture = cloudResponse.secure_url;
   }
 
+  // Save the updated user (without re-validating all fields)
   await user.save({ validateBeforeSave: false });
 
   res.status(200).json({
     message: "Profile updated successfully",
     status: "success",
-    data: {
-      user,
-    },
+    data: { user },
   });
 });
 
@@ -139,15 +143,15 @@ exports.followUnfollow = catchAsync(async (req, res, next) => {
 });
 
 exports.getMe = catchAsync(async (req, res, next) => {
-    const user = req.user;
+  const user = req.user;
 
-    if (!user) {
-        return next(new AppError("User not authenticated", 404));
-    }
+  if (!user) {
+    return next(new AppError("User not authenticated", 404));
+  }
 
-    res.status(200).json({
-        status: "success",
-        message: "Authenticated User",
-        data: { user },
-    });
+  res.status(200).json({
+    status: "success",
+    message: "Authenticated User",
+    data: { user },
+  });
 });

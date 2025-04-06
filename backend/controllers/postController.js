@@ -1,7 +1,7 @@
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const sharp = require("sharp");
-const uploadToCloudinary = require("../utils/cloudinary");
+const { uploadToCloudinary } = require("../utils/cloudinary");
 const Post = require("../models/postModel");
 const User = require("../models/userModel");
 
@@ -45,7 +45,7 @@ exports.createPost = catchAsync(async (req, res, next) => {
     await post.populate({
         path: "user",
         select: "username email bio profilePicture",
-    }).execPopulate();
+    });
 
     // Return the response
     return res.status(201).json({
