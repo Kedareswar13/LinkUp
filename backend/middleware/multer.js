@@ -4,6 +4,6 @@ const multer = require("multer");
 const storage = multer.memoryStorage();
 
 // Define upload middleware with file limits
-const upload = multer({storage});
+const upload = multer({ storage });
 
 module.exports = upload;
