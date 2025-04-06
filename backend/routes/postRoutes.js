@@ -6,7 +6,7 @@ const { createPost, getAllPost, getUserPosts, saveOrUnsavePost, deletePost, like
 const router = express.Router();
 
 // Define routes
-router.post("/create-post", isAuthenticated, upload.single("image"), createPost);
+router.post("/create-post", isAuthenticated, upload.single("media"), createPost);
 router.get("/all", getAllPost);
 router.get("/user-post/:id",getUserPosts);
 router.post("/save-unsave-post/:postId", isAuthenticated ,saveOrUnsavePost);
