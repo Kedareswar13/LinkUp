@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import Image from "next/image";
 import LoadingButton from "../Helper/loadingButton";
 import { Button } from "../ui/button";
-import { ImageIcon } from "lucide-react";
+import { ImageIcon, VideoIcon } from "lucide-react";
 import { toast } from "sonner";
 import { BASE_API_URL } from "@/server";
 import axios from "axios";
@@ -22,55 +22,54 @@ const CreatePostModal = ({ isOpen, onClose }: Props) => {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [caption, setCaption] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
-      setSelectedImage(null);
-      setPreviewImage(null);
+      setSelectedFile(null);
+      setPreviewUrl(null);
       setCaption("");
     }
   }, [isOpen]);
 
   const handleButtonClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
 
-      // Validate file type
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please select a valid image file!");
+      // Validate file type: allow images or videos
+      if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+        toast.error("Please select a valid image or video file!");
         return;
       }
 
-      // Validate image size (10MB)
-      if (file.size > 10 * 1024 * 1024) {
+      // Validate file size (e.g., 10MB maximum)
+      if (file.size > 20 * 1024 * 1024) {
         toast.error("File size should not exceed 10MB!");
         return;
       }
-      const imageUrl = URL.createObjectURL(file); 
-      setSelectedImage(file);
-      setPreviewImage(imageUrl);
+
+      const fileUrl = URL.createObjectURL(file);
+      setSelectedFile(file);
+      setPreviewUrl(fileUrl);
     }
   };
 
   const handleCreatePost = async () => {
+    if (!selectedFile) return;
+
     const formData = new FormData();
-  
-    if (selectedImage) {
-      formData.append("caption", caption);
-      formData.append("image", selectedImage);
-    }
-  
+    formData.append("caption", caption);
+    // Append file with key "media" for the backend to pick up
+    formData.append("media", selectedFile);
+
     const createPostReq = async () =>
       await axios.post(`${BASE_API_URL}/posts/create-post`, formData, {
         withCredentials: true,
@@ -78,14 +77,14 @@ const CreatePostModal = ({ isOpen, onClose }: Props) => {
           "Content-Type": "multipart/form-data",
         },
       });
-  
+
     const result = await handleAuthRequest(createPostReq, setIsLoading);
-  
+
     if (result) {
       toast.success("Post created successfully!");
       dispatch(addPost(result?.data?.data?.post)); // Optional: Add to Redux
-      setSelectedImage(null);
-      setPreviewImage(null);
+      setSelectedFile(null);
+      setPreviewUrl(null);
       setCaption("");
       onClose(); // Close the modal
       router.push("/");
@@ -96,25 +95,34 @@ const CreatePostModal = ({ isOpen, onClose }: Props) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
-        {previewImage ? (
-          //Only show the selected image and input for caption when image is chosen
+        {previewUrl ? (
+          // Show preview based on file type
           <div className="flex flex-col justify-center items-center text-center space-y-4">
             <div className="mt-4">
-              <Image
-                src={previewImage}
-                alt="Image"
-                width={400}
-                height={400}
-                className="overflow-auto max-h-96 rounded-md object-contain w-full"
-              />
+              {selectedFile?.type.startsWith("video/") ? (
+                <video
+                  controls
+                  src={previewUrl}
+                  className="overflow-auto max-h-96 rounded-md object-contain w-full"
+                >
+                  Your browser does not support the video tag.
+                </video>
+              ) : (
+                <Image
+                  src={previewUrl}
+                  alt="Preview"
+                  width={400}
+                  height={400}
+                  className="overflow-auto max-h-96 rounded-md object-contain w-full"
+                />
+              )}
             </div>
             <input
               type="text"
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Write a caption ..."
-              className="mt-4 p-2 border rounded-md w-full text-gray-700
-          focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="mt-4 p-2 border rounded-md w-full text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
             <div className="flex space-x-4 mt-4">
               <LoadingButton
@@ -127,8 +135,8 @@ const CreatePostModal = ({ isOpen, onClose }: Props) => {
               <Button
                 className="bg-gray-500 text-white hover:bg-gray-600"
                 onClick={() => {
-                  setPreviewImage(null);
-                  setSelectedImage(null);
+                  setPreviewUrl(null);
+                  setSelectedFile(null);
                   setCaption("");
                   onClose();
                 }}
@@ -138,23 +146,21 @@ const CreatePostModal = ({ isOpen, onClose }: Props) => {
             </div>
           </div>
         ) : (
-          //Show the default Veiw
+          // Default view before a file is selected
           <>
             <DialogHeader>
               <DialogTitle className="text-center mt-3 mb-3">
-                Upload Photo
+                Upload Photo or Video
               </DialogTitle>
             </DialogHeader>
-
             <div className="flex flex-col items-center justify-center text-center space-y-4">
               <div className="flex space-x-2 text-gray-600">
-                <ImageIcon size={40} />
+                <ImageIcon size={40}/>
+                <VideoIcon size={40}/>
               </div>
-
               <p className="text-gray-600 mt-4">
-                Select a photo from your computer
+                Select a photo or video from your computer
               </p>
-
               <Button
                 className="bg-blue-600 text-white hover:bg-blue-700"
                 onClick={handleButtonClick}
@@ -163,7 +169,7 @@ const CreatePostModal = ({ isOpen, onClose }: Props) => {
               </Button>
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 className="hidden"
                 ref={fileInputRef}
                 onChange={handleFileChange}

@@ -61,7 +61,7 @@ const RightSidebar = () => {
       </div>
       <div className="flex items-center justify-between mt-8">
         <h1 className="font-semibold text-gray-700">Suggested User</h1>
-        <h1 className="font-medium cursor-pointer">Sell All</h1>
+        <h1 className="font-medium cursor-pointer">See All</h1>
       </div>
       {suggestedUser?.slice(0, 5).map((s_user) => (
         <div onClick={() => { router.push(`/profile/${s_user._id}`) }} 
