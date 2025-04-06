@@ -89,14 +89,10 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now, // ✅ Manually setting createdAt
-  },
  },
  {
-    timestamps: { createdAt: false, updatedAt: true } 
- } // ✅ Prevents automatic overriding of createdAt
+    timestamps:  true, 
+ } 
 ); 
 
 

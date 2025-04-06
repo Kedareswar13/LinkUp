@@ -7,9 +7,10 @@ const postSchema = new mongoose.Schema(
       maxlength: [2200, "Caption should be less than 2200 characters"],
       trim: true,
     },
-    image: {
+    media: {
       url: { type: String, required: true },
       publicId: { type: String, required: true },
+      type: { type: String, required: true }, // "image" or "video"
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -28,10 +29,6 @@ const postSchema = new mongoose.Schema(
         ref: "Comment",
       },
     ],
-    createdAt: {
-      type: Date,
-      default: Date.now, // Corrected here
-    },
   },
   { timestamps: true }
 );
