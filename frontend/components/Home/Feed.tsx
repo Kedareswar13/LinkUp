@@ -12,6 +12,7 @@ import DotButton from "../Helper/DotButton";
 import Image from "next/image";
 import Comments from "../Helper/Comments";
 import { toast } from "sonner";
+import { setAuthUser } from "@/store/authSlice";
 
 const Feed = () => {
   const dispatch = useDispatch();
@@ -66,7 +67,16 @@ const Feed = () => {
   };
 
   const handleSaveUnsave = async (id: string) => {
-    // Implement save/unsave functionality here.
+    const result = await axios.post(
+      `${BASE_API_URL}/posts/save-unsave-post/${id}`,
+      {},
+      { withCredentials: true }
+    );
+
+    if (result.data.status == "success") {
+      dispatch(setAuthUser(result.data.data.user));
+      toast.success(result.data.message);
+    }
   };
 
   const handleComment = async (id: string) => {
@@ -144,14 +154,18 @@ const Feed = () => {
                       : "text-gray-500"
                   } ${animateHeart ? "animate-like-pop" : ""}`}
                 />
-                <MessageCircle
-                  className="cursor-pointer text-gray-500"
-                />
+                <MessageCircle className="cursor-pointer text-gray-500" />
                 <Send className="cursor-pointer text-gray-500" />
               </div>
               <Bookmark
-                onClick={() => handleSaveUnsave(post._id)}
-                className="cursor-pointer text-gray-500"
+                onClick={() => handleSaveUnsave(post?._id)}
+                className={`cursor-pointer text-gray-500 ${
+                  (user?.savedPosts as string[])?.some(
+                    (savePostId: string) => savePostId === post._id
+                  )
+                    ? "text-red-500"
+                    : " "
+                }`}
               />
             </div>
 
