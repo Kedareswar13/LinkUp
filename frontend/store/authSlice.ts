@@ -19,8 +19,7 @@ const authSlice = createSlice({
         const { username, profilePicture, bio } = action.payload;
         state.user = {
           ...action.payload,
-          username: username || "",
-          profilePicture: profilePicture || "",
+          
           bio: bio || "",
            // Ensure savedPosts is preserved, defaulting to an empty array if not provided
            savedPosts: savePosts || [],
