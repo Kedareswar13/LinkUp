@@ -6,3 +6,5 @@ Robust Authentication: Appwrite for secure authentication and user privacy manag
 Explore Page: React for frontend development, displaying dynamic content.
 Like and Save Posts: React, with Appwrite for storing and managing user interactions.
 Detailed Post Page: React for rendering content, integrated with Appwrite for data storage.
+Profile Page: React for UI, with Appwrite for managing user data and profile details.
+Browse Profiles: React for browsing and displaying user profiles, Appwrite for data storage.
